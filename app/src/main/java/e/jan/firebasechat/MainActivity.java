@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
     String correo;
     String psw;
     ProgressBar progressBar;
-
+    FirebaseUser currentUser;
     private FirebaseAuth mAuth;
     private static final String TAG = "EmailPassword";
 
@@ -41,9 +41,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        userText = findViewById(R.id.textView);
         email = findViewById(R.id.editText4);
-        passwordText = findViewById(R.id.textView2);
         password = findViewById(R.id.editText3);
         login = findViewById(R.id.button3);
         register = findViewById(R.id.button4);
@@ -51,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
         progressBar.setVisibility(View.GONE);
 
         mAuth = FirebaseAuth.getInstance();
+
         register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -61,9 +60,10 @@ public class MainActivity extends AppCompatActivity {
                 psw = password.getText().toString();
                 // Write a message to the database
                 FirebaseDatabase database = FirebaseDatabase.getInstance();
-                DatabaseReference myRef = database.getReference().child("users").child(mAuth.getCurrentUser().getUid());
-                DatabaseReference emailField = myRef.child("email");
-                DatabaseReference pswField = myRef.child("password");
+                DatabaseReference myRef = database.getReference().child("users");
+                DatabaseReference childRef = myRef.child(currentUser.getUid());
+                DatabaseReference emailField = childRef.child("email");
+                DatabaseReference pswField = childRef.child("password");
                 emailField.setValue(correo);
                 pswField.setValue(psw);
             }
@@ -81,11 +81,11 @@ public class MainActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
+        currentUser = mAuth.getCurrentUser();
 
     }
 
-    public void Register(Boolean isLogin, String email, String password) {
+    public void Register(Boolean isLogin, final String email, final String password) {
         if(isLogin) {
             mAuth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -95,7 +95,8 @@ public class MainActivity extends AppCompatActivity {
                             if (task.isSuccessful()) {
                                 // Sign in success, update UI with the signed-in user's information
                                 Log.i("Success", "createUserWithEmail:success");
-                                FirebaseUser user = mAuth.getCurrentUser();
+                                Login(email, password);
+                                currentUser = mAuth.getCurrentUser();
                                 Toast.makeText(MainActivity.this, "Account created successfully.",
                                         Toast.LENGTH_SHORT).show();
                             } else {
@@ -122,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
                             Log.i("Success", "LogInUserWithEmail:success");
                             Toast.makeText(MainActivity.this, "Authentication success.",
                                     Toast.LENGTH_SHORT).show();
-                            FirebaseUser user = mAuth.getCurrentUser();
+                            currentUser = mAuth.getCurrentUser();
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.i("Failed", "LogInUserWithEmail:failed");
