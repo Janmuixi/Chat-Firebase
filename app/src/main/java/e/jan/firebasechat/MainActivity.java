@@ -24,9 +24,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import org.w3c.dom.Text;
 
 public class MainActivity extends AppCompatActivity {
-    TextView userText;
     EditText email;
-    TextView passwordText;
     EditText password;
     Button login;
     Button register;
@@ -35,7 +33,6 @@ public class MainActivity extends AppCompatActivity {
     ProgressBar progressBar;
     FirebaseUser currentUser;
     private FirebaseAuth mAuth;
-    private static final String TAG = "EmailPassword";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
         login = findViewById(R.id.button3);
         register = findViewById(R.id.button4);
         progressBar = findViewById(R.id.progressBar);
+
         progressBar.setVisibility(View.GONE);
 
         mAuth = FirebaseAuth.getInstance();
@@ -56,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
                 progressBar.setVisibility(View.VISIBLE);
                 Register(true, email.getText().toString().trim(), password.getText().toString());
 
+                // Transform variables into Strings
                 correo = email.getText().toString();
                 psw = password.getText().toString();
                 // Write a message to the database
@@ -93,15 +92,16 @@ public class MainActivity extends AppCompatActivity {
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             progressBar.setVisibility(View.GONE);
                             if (task.isSuccessful()) {
-                                // Sign in success, update UI with the signed-in user's information
-                                Log.i("Success", "createUserWithEmail:success");
+                                // Log in becouse we need to save the UID from the actual user,
+                                // and we cant take the UID if we are not logged in.
                                 Login(email, password);
                                 currentUser = mAuth.getCurrentUser();
+
+                                //Display a message to the user if the login success.
                                 Toast.makeText(MainActivity.this, "Account created successfully.",
                                         Toast.LENGTH_SHORT).show();
                             } else {
                                 // If sign in fails, display a message to the user.
-                                Log.w(TAG, "createUserWithEmail:failure", task.getException());
                                 Toast.makeText(MainActivity.this, "Registration failed.",
                                         Toast.LENGTH_SHORT).show();
 
@@ -120,13 +120,11 @@ public class MainActivity extends AppCompatActivity {
                         progressBar.setVisibility(View.GONE);
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
-                            Log.i("Success", "LogInUserWithEmail:success");
                             Toast.makeText(MainActivity.this, "Authentication success.",
                                     Toast.LENGTH_SHORT).show();
                             currentUser = mAuth.getCurrentUser();
                         } else {
                             // If sign in fails, display a message to the user.
-                            Log.i("Failed", "LogInUserWithEmail:failed");
                             Toast.makeText(MainActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                         }
