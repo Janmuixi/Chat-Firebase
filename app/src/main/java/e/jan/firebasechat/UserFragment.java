@@ -8,10 +8,17 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +46,6 @@ public class UserFragment extends Fragment {
 
     RecyclerView userRecycler;
     List<User> userList = new ArrayList<>();
-    userAdapter miAdapter = new userAdapter(userList);
 
     public UserFragment() {
         // Required empty public constructor
@@ -80,9 +86,30 @@ public class UserFragment extends Fragment {
 
         userRecycler = view.findViewById(R.id.user_recycler);
         userRecycler.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference myRef = database.getReference();
+
+        final userAdapter miAdapter = new userAdapter(userList);
+
         userRecycler.setAdapter(miAdapter);
 
-        miAdapter.notifyDataSetChanged();
+        myRef.child("users")
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        userList.removeAll(userList);
+                        for (DataSnapshot snapshot: dataSnapshot.getChildren()) {
+                            userList.add(snapshot.getValue(User.class));
+                        }
+                        miAdapter.notifyDataSetChanged();
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
 
         return view;
     }
@@ -126,18 +153,8 @@ public class UserFragment extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 
-    public class UserViewHolder extends  RecyclerView.ViewHolder{
 
-        TextView emailTextView;
-
-        public UserViewHolder(@NonNull View itemView) {
-            super(itemView);
-            emailTextView = itemView.findViewById(R.id.emailTextView);
-        }
-
-
-    }
-    public class userAdapter extends RecyclerView.Adapter<UserViewHolder>{
+    public class userAdapter extends RecyclerView.Adapter<userAdapter.UserViewHolder>{
 
         public userAdapter(List<User> userListAdapter) {
             this.userListAdapter = userListAdapter;
@@ -145,13 +162,25 @@ public class UserFragment extends Fragment {
 
         List<User> userListAdapter = new ArrayList<>();
 
+        public class UserViewHolder extends  RecyclerView.ViewHolder{
+
+            TextView emailTextView;
+
+            public UserViewHolder(@NonNull View itemView) {
+                super(itemView);
+                emailTextView = itemView.findViewById(R.id.emailTextView);
+            }
+
+
+        }
 
         @NonNull
         @Override
         public UserViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
             View itemView = getLayoutInflater()
                     .inflate(R.layout.user_viewholder, viewGroup, false);
-            return new UserViewHolder(itemView);
+            UserViewHolder holder = new UserViewHolder(itemView);
+            return holder;
         }
 
         @Override

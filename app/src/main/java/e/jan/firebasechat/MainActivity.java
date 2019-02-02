@@ -1,5 +1,6 @@
 package e.jan.firebasechat;
 
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -28,7 +29,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements LoginFragment.OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity implements LoginFragment.OnFragmentInteractionListener, UserFragment.OnFragmentInteractionListener {
 
     private FirebaseAuth mAuth;
     ProgressBar progressBar;
@@ -43,36 +44,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
         FragmentManager fm = getSupportFragmentManager();
         Fragment fragment = new LoginFragment();
         fm.beginTransaction().replace(R.id.fragmentContainer, fragment).commit();
-
-        FirebaseDatabase.getInstance().getReference().child("users")
-                .addChildEventListener(new ChildEventListener() {
-                    @Override
-                    public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                        User item = dataSnapshot.getValue(User.class);
-                        Log.i("FIREBASE USERS", item.getEmail());
-                        userList.add(item);
-                    }
-
-                    @Override
-                    public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-                    }
-
-                    @Override
-                    public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
-                    }
-
-                    @Override
-                    public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                });
     }
 
     @Override
@@ -85,6 +56,10 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
                             // Sign in success, update UI with the signed-in user's information
                             Toast.makeText(MainActivity.this, "Authentication success.",
                                     Toast.LENGTH_SHORT).show();
+
+                            FragmentManager fm = getSupportFragmentManager();
+                            Fragment fragment = new UserFragment();
+                            fm.beginTransaction().replace(R.id.fragmentContainer, fragment).commit();
                         } else {
                             // If sign in fails, display a message to the user.
                             Toast.makeText(MainActivity.this, "Authentication failed.",
@@ -111,11 +86,12 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
                             // and we cant take the UID if we are not logged in.
                             loginFast(user.email, user.password);
                             currentUser = mAuth.getCurrentUser();
+
                             // Write a message to the database
                             FirebaseDatabase database = FirebaseDatabase.getInstance();
                             DatabaseReference usersRef = database.getReference().child("users");
                             DatabaseReference childRef = usersRef.child(currentUser.getUid());
-                            DatabaseReference emailField = childRef.child("emailET");
+                            DatabaseReference emailField = childRef.child("email");
                             DatabaseReference pswField = childRef.child("password");
                             emailField.setValue(email);
                             pswField.setValue(psw);
@@ -133,6 +109,11 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
                         // ...
                     }
                 });
+
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
 
     }
 }

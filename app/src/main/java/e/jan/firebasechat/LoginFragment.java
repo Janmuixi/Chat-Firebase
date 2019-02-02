@@ -34,10 +34,7 @@ public class LoginFragment extends Fragment {
     EditText password;
     Button login;
     Button register;
-    String email;
-    String psw;
     ProgressBar progressBar;
-    FirebaseUser currentUser;
     private FirebaseAuth mAuth;
     // TODO: Rename and change types of parameters
     private String mParam1;
