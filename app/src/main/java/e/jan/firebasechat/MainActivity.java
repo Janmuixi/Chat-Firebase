@@ -47,73 +47,90 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
     }
 
     @Override
-    public void login(String email, String psw) {
-        mAuth.signInWithEmailAndPassword(email, psw)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Toast.makeText(MainActivity.this, "Authentication success.",
-                                    Toast.LENGTH_SHORT).show();
+    public void login(@Nullable String email, @Nullable String psw) {
+        try {
+            mAuth.signInWithEmailAndPassword(email, psw)
+                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful()) {
+                                // Sign in success, update UI with the signed-in user's information
+                                Toast.makeText(MainActivity.this, "Authentication success.",
+                                        Toast.LENGTH_SHORT).show();
 
-                            FragmentManager fm = getSupportFragmentManager();
-                            Fragment fragment = new UserFragment();
-                            fm.beginTransaction().replace(R.id.fragmentContainer, fragment).commit();
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Toast.makeText(MainActivity.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
+                                FragmentManager fm = getSupportFragmentManager();
+                                Fragment fragment = new UserFragment();
+                                fm.beginTransaction().replace(R.id.fragmentContainer, fragment).commit();
+                            } else {
+                                // If sign in fails, display a message to the user.
+                                Toast.makeText(MainActivity.this, "Authentication failed.",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+
+                            // ...
                         }
+                    });
+        } catch (IllegalArgumentException ex) {
+            Toast.makeText(MainActivity.this, "User and password fields can not be empty",
+                    Toast.LENGTH_SHORT).show();
+        }
 
-                        // ...
-                    }
-                });
     }
     public void loginFast(String email, String psw) {
         mAuth.signInWithEmailAndPassword(email, psw);
     }
 
     @Override
-    public void register(final String email, final String psw) {
-        final User user = new User(email, psw);
-        mAuth.createUserWithEmailAndPassword(user.email, user.password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Log in becouse we need to save the UID from the actual user,
-                            // and we cant take the UID if we are not logged in.
-                            loginFast(user.email, user.password);
-                            currentUser = mAuth.getCurrentUser();
+    public void register(@Nullable final String email, @Nullable final String psw) {
+        try {
+            final User user = new User(email, psw);
+            mAuth.createUserWithEmailAndPassword(user.email, user.password)
+                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful()) {
+                                // Log in becouse we need to save the UID from the actual user,
+                                // and we cant take the UID if we are not logged in.
+                                loginFast(user.email, user.password);
+                                currentUser = mAuth.getCurrentUser();
 
-                            // Write a message to the database
-                            FirebaseDatabase database = FirebaseDatabase.getInstance();
-                            DatabaseReference usersRef = database.getReference().child("users");
-                            DatabaseReference childRef = usersRef.child(currentUser.getUid());
-                            DatabaseReference emailField = childRef.child("email");
-                            DatabaseReference pswField = childRef.child("password");
-                            emailField.setValue(email);
-                            pswField.setValue(psw);
-                            //Display a message to the user if the login success.
-                            Toast.makeText(MainActivity.this, "Account created successfully.",
-                                    Toast.LENGTH_SHORT).show();
+                                // Write a message to the database
+                                FirebaseDatabase database = FirebaseDatabase.getInstance();
+                                DatabaseReference usersRef = database.getReference().child("users");
+                                DatabaseReference childRef = usersRef.child(currentUser.getUid());
+                                DatabaseReference emailField = childRef.child("email");
+                                DatabaseReference pswField = childRef.child("password");
+                                emailField.setValue(email);
+                                pswField.setValue(psw);
+                                //Display a message to the user if the login success.
+                                Toast.makeText(MainActivity.this, "Account created successfully.",
+                                        Toast.LENGTH_SHORT).show();
 
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Toast.makeText(MainActivity.this, "Registration failed.",
-                                    Toast.LENGTH_SHORT).show();
+                            } else {
+                                // If sign in fails, display a message to the user.
+                                Toast.makeText(MainActivity.this, "Registration failed.",
+                                        Toast.LENGTH_SHORT).show();
 
+                            }
+
+                            // ...
                         }
+                    });
+        } catch (IllegalArgumentException ex) {
+            Toast.makeText(MainActivity.this, "User and password fields can not be empty",
+                    Toast.LENGTH_SHORT).show();
+        }
 
-                        // ...
-                    }
-                });
+
 
     }
 
     @Override
     public void onFragmentInteraction(Uri uri) {
 
+    }
+
+    public String getCurrentUserEmail () {
+        return currentUser.getEmail();
     }
 }

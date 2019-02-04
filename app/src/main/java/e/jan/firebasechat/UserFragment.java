@@ -100,7 +100,8 @@ public class UserFragment extends Fragment {
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         userList.removeAll(userList);
                         for (DataSnapshot snapshot: dataSnapshot.getChildren()) {
-                            userList.add(snapshot.getValue(User.class));
+                            User user = snapshot.getValue(User.class);
+                            userList.add(user);
                         }
                         miAdapter.notifyDataSetChanged();
                     }
@@ -150,6 +151,8 @@ public class UserFragment extends Fragment {
      */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
+        String getCurrentUserEmail();
+
         void onFragmentInteraction(Uri uri);
     }
 
